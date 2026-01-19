@@ -1,0 +1,30 @@
+name: Lint
+
+on:
+  pull_request:
+  push:
+  schedule:
+    - cron: 0 0 1 * *  # monthly
+  workflow_dispatch:
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v6
+
+      - name: Create requirements.txt
+        uses: 1arp/create-a-file-action@0.4.5
+        with:
+          file: 'requirements.txt'
+          content: 'pre-commit'
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.1

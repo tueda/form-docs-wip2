@@ -1,0 +1,37 @@
+name: Check-Update
+
+on:
+  # schedule:
+  #   - cron: 0 1 * * *  # daily
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check-update:
+    runs-on: ubuntu-latest
+    env:
+      GIT_AUTHOR_NAME: github-actions[bot]
+      GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+      GIT_COMMITTER_NAME: github-actions[bot]
+      GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends doxygen-latex graphviz latex2html pre-commit
+
+      - run: |
+          ./scripts/make-docs master master
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: master
+          path: master
