@@ -26,10 +26,10 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends doxygen-latex graphviz latex2html pre-commit
+          sudo apt-get install -y --no-install-recommends doxygen-latex graphviz groff latex2html
 
       - run: |
-          ./scripts/make-docs master master
+          ./scripts/make-docs.sh master master
 
       - uses: actions/upload-artifact@v4
         with:
