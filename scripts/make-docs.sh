@@ -12,9 +12,13 @@ REPOSITORY=https://github.com/form-dev/form.git
 repo_rev=$1
 out_dir=$2
 
-# Convert the output directory into an absolute path.
-if [[ $out_dir != /* ]]; then
-  out_dir="$PWD/$out_dir"
+abort() {
+  echo "error: $*" 1>&2
+  exit 1
+}
+
+if [[ -d $out_dir ]]; then
+  abort "output directory already exists: $out_dir"
 fi
 
 # Create a temporary working directory.
@@ -22,7 +26,7 @@ tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 
 # Build documentation in the temporary directory.
-cd "$tmp_dir"
+pushd "$tmp_dir"
 
 sed_i() {
   local file
@@ -48,12 +52,12 @@ make_tarball() {
 }
 
 git clone $REPOSITORY
-cd form
+pushd form
 git checkout "$repo_rev"
 version=$(./scripts/git-version-gen.sh -r | sed '2q;d' | sed 's/^v//')
 autoreconf -i
 mkdir build
-cd build
+pushd build
 ../configure --disable-dependency-tracking --disable-scalar --disable-threaded
 sed_i 's/^\(CASE_SENSE_NAMES\s*=\s*\)YES/\1NO/' doc/doxygen/DoxyfileHTML
 sed_i 's/^\(HAVE_DOT\s*=\s*\)NO/\1YES/' doc/doxygen/DoxyfileHTML
@@ -75,20 +79,26 @@ man -Thtml ../doc/form.1 >doc/form.html
 man -Tpdf ../doc/form.1 >doc/form.pdf
 
 # Prepare the output directory.
-mkdir -p "$out_dir"
+popd && popd && popd
+build_dir="$tmp_dir/form/build"
+tmp_out_dir="$out_dir.tmp$$"
+mkdir -p "$tmp_out_dir"
 
 # Move the documents.
-git rev-parse HEAD >"$out_dir/_REVISION"
-echo "$version" >"$out_dir/_VERSION"
-mv doc/manual/manual.pdf "$out_dir/form-$version-manual.pdf"
-mv doc/devref/devref.pdf "$out_dir/form-$version-devref.pdf"
-mv doc/doxygen/doxygen.pdf "$out_dir/form-$version-doxygen.pdf"
-mv "form-$version-manual-html.tar.gz" "$out_dir/form-$version-manual-html.tar.gz"
-mv "form-$version-devref-html.tar.gz" "$out_dir/form-$version-devref-html.tar.gz"
-mv "form-$version-doxygen-html.tar.gz" "$out_dir/form-$version-doxygen-html.tar.gz"
-mv doc/manual/manual "$out_dir/manual"
-mv doc/devref/devref "$out_dir/devref"
-mv doc/doxygen/html "$out_dir/doxygen"
-mv doc/form.1 "$out_dir/form.1"
-mv doc/form.html "$out_dir/form.html"
-mv doc/form.pdf "$out_dir/form-$version.pdf"
+git rev-parse HEAD >"$tmp_out_dir/_REVISION"
+echo "$version" >"$tmp_out_dir/_VERSION"
+mv "$build_dir/doc/manual/manual.pdf" "$tmp_out_dir/form-$version-manual.pdf"
+mv "$build_dir/doc/devref/devref.pdf" "$tmp_out_dir/form-$version-devref.pdf"
+mv "$build_dir/doc/doxygen/doxygen.pdf" "$tmp_out_dir/form-$version-doxygen.pdf"
+mv "$build_dir/form-$version-manual-html.tar.gz" "$tmp_out_dir/form-$version-manual-html.tar.gz"
+mv "$build_dir/form-$version-devref-html.tar.gz" "$tmp_out_dir/form-$version-devref-html.tar.gz"
+mv "$build_dir/form-$version-doxygen-html.tar.gz" "$tmp_out_dir/form-$version-doxygen-html.tar.gz"
+mv "$build_dir/doc/manual/manual" "$tmp_out_dir/manual"
+mv "$build_dir/doc/devref/devref" "$tmp_out_dir/devref"
+mv "$build_dir/doc/doxygen/html" "$tmp_out_dir/doxygen"
+mv "$build_dir/doc/form.1" "$tmp_out_dir/form.1"
+mv "$build_dir/doc/form.html" "$tmp_out_dir/form.html"
+mv "$build_dir/doc/form.pdf" "$tmp_out_dir/form-$version.pdf"
+
+mkdir -p "$out_dir/.."
+mv "$tmp_out_dir" "$out_dir"
