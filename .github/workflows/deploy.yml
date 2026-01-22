@@ -6,6 +6,10 @@ on:
   push:
   workflow_dispatch:
 
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
   list-docs:
     runs-on: ubuntu-latest
@@ -97,9 +101,12 @@ jobs:
         with:
           path: _site
 
-  deploy:
+  deploy-docs:
     needs: collect-docs
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     steps:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
