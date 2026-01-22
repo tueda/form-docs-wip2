@@ -66,7 +66,7 @@ jobs:
       - name: Download all docs artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: docs-*'
+          pattern: docs-*
           merge-multiple: true
 
       - run: ls -R
