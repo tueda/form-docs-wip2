@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.make-matrix.outputs.matrix }}
+      hash: ${{ steps.check-hash.outputs.hash }}
+      changed: ${{ steps.check-hash.outputs.changed }}
     env:
       list_docs_options: -d master -m v4.3.1 -e v5.0.0-beta.1
     steps:
@@ -29,12 +31,29 @@ jobs:
           matrix="$(jq -c '{include: .docs}' _temp.json)"
           echo "matrix=$matrix" >>"$GITHUB_OUTPUT"
 
+      - name: Compute hash and check if updated
+        id: check-hash
+        run: |
+          hash=$(jq -cS . _temp.json | sha256sum | awk '{print $1}')
+          changed=true
+          git fetch --no-tags origin pages-state:refs/remotes/origin/pages-state 2>/dev/null || :
+          if git show origin/pages-state:.pages.hash >/dev/null 2>&1; then
+            old_hash=$(git show origin/pages-state:.pages.hash | tr -d '\r\n')
+            if [ "$hash" = "$old_hash" ]; then
+              changed=false
+            fi
+          fi
+          echo "changed=$changed" >>"$GITHUB_OUTPUT"
+          echo "hash=$hash" >>"$GITHUB_OUTPUT"
+
   build-docs:
     name: build-docs (${{ matrix.ref }})
     needs: list-docs
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ needs.list-docs.outputs.matrix }}
+      hash: ${{ needs.list-docs.outputs.hash }}
+      changed: ${{ needs.list-docs.outputs.changed }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.list-docs.outputs.matrix) }}
@@ -47,20 +66,21 @@ jobs:
           key: docs-${{ matrix.rev }}
 
       - name: Checkout the repository
-        if: steps.cache-docs.outputs.cache-hit != 'true'
+        if: steps.cache-docs.outputs.cache-hit != 'true' && needs.list-docs.outputs.changed == 'true'
         uses: actions/checkout@v6
 
       - name: Install dependencies
-        if: steps.cache-docs.outputs.cache-hit != 'true'
+        if: steps.cache-docs.outputs.cache-hit != 'true' && needs.list-docs.outputs.changed == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends doxygen-latex graphviz groff latex2html
 
       - name: Build docs
-        if: steps.cache-docs.outputs.cache-hit != 'true'
+        if: steps.cache-docs.outputs.cache-hit != 'true' && needs.list-docs.outputs.changed == 'true'
         run: ./scripts/make-docs.sh ${{ matrix.rev }} docs/${{ matrix.ref }}
 
       - name: Upload docs artifact
+        if: needs.list-docs.outputs.changed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: docs-${{ matrix.ref }}
@@ -71,7 +91,10 @@ jobs:
 
   collect-docs:
     needs: build-docs
+    if: needs.build-docs.outputs.changed == 'true'
     runs-on: ubuntu-latest
+    outputs:
+      hash: ${{ needs.build-docs.outputs.hash }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v6
@@ -104,6 +127,8 @@ jobs:
   deploy-docs:
     needs: collect-docs
     runs-on: ubuntu-latest
+    outputs:
+      hash: ${{ needs.collect-docs.outputs.hash }}
     permissions:
       pages: write
       id-token: write
@@ -114,3 +139,27 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  update-state:
+    needs: deploy-docs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v6
+
+      - name: Update pages-state hash
+        run: |
+          git fetch --no-tags origin pages-state:refs/remotes/origin/pages-state 2>/dev/null || :
+          if git show-ref --verify --quiet refs/remotes/origin/pages-state; then
+            git switch -c pages-state --track origin/pages-state 2>/dev/null || git switch pages-state
+          else
+            git switch --orphan pages-state
+          fi
+          echo '${{ needs.deploy-docs.outputs.hash }}' >.pages.hash
+          git add .pages.hash
+          git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -m 'chore(pages): update deployed hash' || true
+          git push origin pages-state
