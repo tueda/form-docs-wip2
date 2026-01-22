@@ -79,7 +79,7 @@ jobs:
 
       - name: Build docs index page
         run: |
-          echo "${{ fromJSON(needs.build-docs.outputs.matrix) }}" | jq '{docs: .include}' > _temp.json
+          echo '${{ needs.build-docs.outputs.matrix }}' | jq '{docs: .include}' > _temp.json
           cat _temp.json
           ./scripts/make-index.sh _temp.json docs >docs/index.md
 
