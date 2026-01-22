@@ -6,32 +6,32 @@ on:
   push:
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  check-update:
+  list-docs:
     runs-on: ubuntu-latest
-    env:
-      GIT_AUTHOR_NAME: github-actions[bot]
-      GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-      GIT_COMMITTER_NAME: github-actions[bot]
-      GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+    outputs:
+      matrix: ${{ steps.make-matrix.outputs.matrix }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v6
-        with:
-          persist-credentials: true
 
-      - name: Install dependencies
+      - name: Build docs index
+        id: make-matrix
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends doxygen-latex graphviz groff latex2html
+          ./scripts/list-docs.sh -d master -m v4.3.1 -e v5.0.0-beta.1 >_temp.json
+          cat _temp.json
+          matrix="$(jq -c '{include: .docs}' _temp.json)"
+          echo "matrix=$matrix" >>"$GITHUB_OUTPUT"
 
+  build-docs:
+    needs: list-docs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.list-docs.outputs.matrix) }}
+    steps:
       - run: |
-          ./scripts/make-docs.sh master master
-
-      - uses: actions/upload-artifact@v6
-        with:
-          name: master
-          path: master
+          echo "name=${{ matrix.name }}"
+          echo "ref=${{ matrix.ref }}"
+          echo "rev=${{ matrix.rev }}"
+          echo "url=${{ matrix.url }}"

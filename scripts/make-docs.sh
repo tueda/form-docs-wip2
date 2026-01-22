@@ -12,7 +12,7 @@ REPOSITORY=https://github.com/form-dev/form.git
 repo_rev=$1
 out_dir=$2
 
-# Convert the output directory to an absolute path.
+# Convert the output directory into an absolute path.
 if [[ $out_dir != /* ]]; then
   out_dir="$PWD/$out_dir"
 fi
