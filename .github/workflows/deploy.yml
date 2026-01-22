@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.make-matrix.outputs.matrix }}
+    env:
+      list_docs_options: -d master -m v4.3.1 -e v5.0.0-beta.1
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v6
@@ -18,7 +20,7 @@ jobs:
       - name: Build docs index
         id: make-matrix
         run: |
-          ./scripts/list-docs.sh -d master -m v4.3.1 -e v5.0.0-beta.1 >_temp.json
+          ./scripts/list-docs.sh ${{ env.list_docs_options }} >_temp.json
           cat _temp.json
           matrix="$(jq -c '{include: .docs}' _temp.json)"
           echo "matrix=$matrix" >>"$GITHUB_OUTPUT"
@@ -27,6 +29,8 @@ jobs:
     name: build-docs (${{ matrix.ref }})
     needs: list-docs
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ needs.list-docs.outputs.matrix }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.list-docs.outputs.matrix) }}
@@ -75,7 +79,7 @@ jobs:
 
       - name: Build index page
         run: |
-          echo "${{ fromJSON(needs.list-docs.outputs.matrix) }}" | jq '{docs: .include}' > _temp.json
+          echo "${{ fromJSON(needs.build-docs.outputs.matrix) }}" | jq '{docs: .include}' > _temp.json
           cat _temp.json
           ./scripts/make-index.sh _temp.json docs >docs/index.md
 
