@@ -77,20 +77,23 @@ jobs:
         with:
           merge-multiple: true
 
-      - name: Build index page
+      - name: Build docs index page
         run: |
           echo "${{ fromJSON(needs.build-docs.outputs.matrix) }}" | jq '{docs: .include}' > _temp.json
           cat _temp.json
           ./scripts/make-index.sh _temp.json docs >docs/index.md
 
-      - uses: actions/configure-pages@v5
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
 
-      - uses: actions/jekyll-build-pages@v1
+      - name: Build site with Jekyll
+        uses: actions/jekyll-build-pages@v1
         with:
           source: docs
           destination: _site
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: _site
 
@@ -98,4 +101,5 @@ jobs:
     needs: build-docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
