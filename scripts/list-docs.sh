@@ -24,10 +24,11 @@ abort() {
 
 while getopts 'd:m:i:e:' opt; do
   case "$opt" in
-    d) development_branches+=("$OPTARG") ;;
-    m) minimum_version="$OPTARG" ;;
-    i) include_versions+=("$OPTARG") ;;
-    e) exclude_versions+=("$OPTARG") ;;
+  d) development_branches+=("$OPTARG") ;;
+  m) minimum_version="$OPTARG" ;;
+  i) include_versions+=("$OPTARG") ;;
+  e) exclude_versions+=("$OPTARG") ;;
+  *) abort "unknown option: $opt" ;;
   esac
 done
 
