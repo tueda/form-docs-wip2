@@ -38,6 +38,10 @@ jobs:
           path: docs/${{ matrix.ref }}
           key: ${{ matrix.rev }}
 
+      - name: Checkout the repository
+        if: steps.cache-docs.outputs.cache-hit != 'true'
+        uses: actions/checkout@v6
+
       - name: Install dependencies
         if: steps.cache-docs.outputs.cache-hit != 'true'
         run: |
