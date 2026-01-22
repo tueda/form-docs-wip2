@@ -1,4 +1,4 @@
-name: Update
+name: Deploy
 
 on:
   # schedule:
@@ -24,14 +24,26 @@ jobs:
           echo "matrix=$matrix" >>"$GITHUB_OUTPUT"
 
   build-docs:
+    name: build-docs (${{ matrix.ref }})
     needs: list-docs
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.list-docs.outputs.matrix) }}
     steps:
-      - run: |
-          echo "name=${{ matrix.name }}"
-          echo "ref=${{ matrix.ref }}"
-          echo "rev=${{ matrix.rev }}"
-          echo "url=${{ matrix.url }}"
+      - name: Cache docs
+        id: cache-docs
+        uses: actions/cache@v4
+        with:
+          path: docs/${{ matrix.ref }}
+          key: ${{ matrix.rev }}
+
+      - name: Install dependencies
+        if: steps.cache-docs.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends doxygen-latex graphviz groff latex2html
+
+      - name: Build docs
+        if: steps.cache-docs.outputs.cache-hit != 'true'
+        run: ./scripts/make-docs.sh ${{ matrix.rev }} docs/${{ matrix.ref }}
