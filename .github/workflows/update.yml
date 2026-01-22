@@ -30,6 +30,9 @@ jobs:
       - name: Autoupdate hooks
         run: pre-commit autoupdate
 
+      # Prerequisite: The following repository setting is required:
+      # Actions -> General -> Workflow permissions ->
+      # Allow GitHub Actions to create and approve pull requests
       - name: Create pull request
         uses: peter-evans/create-pull-request@v8
         with:
