@@ -44,7 +44,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: docs/${{ matrix.ref }}
-          key: ${{ matrix.rev }}
+          key: docs-${{ matrix.rev }}
 
       - name: Checkout the repository
         if: steps.cache-docs.outputs.cache-hit != 'true'
