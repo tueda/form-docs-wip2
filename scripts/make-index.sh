@@ -32,6 +32,7 @@ cd "$out_dir"
     echo "- [FORM $version Reference manual]($ref/manual) (also available in [PDF]($ref/form-$version-manual.pdf) or as an [HTML tarball]($ref/form-$version-manual-html.tar.gz))"
     echo "- [FORM $version Developer's reference manual]($ref/devref) (also available in [PDF]($ref/form-$version-devref.pdf) or as an [HTML tarball]($ref/form-$version-devref-html.tar.gz))"
     echo "- [FORM $version API reference]($ref/doxygen) (also available in [PDF]($ref/form-$version-doxygen.pdf) or as an [HTML tarball]($ref/form-$version-doxygen-html.tar.gz))"
-    echo "- [Manpage of FORM $version]($ref/form.html) (also available in [PDF]($ref/form-$version.pdf) or as a [man page]($ref/form.1))"
+    echo "- [Man page for FORM $version]($ref/form.html) (also available in [PDF]($ref/form-$version.pdf) or as a [man page]($ref/form.1))"
+    echo
   done
 }
