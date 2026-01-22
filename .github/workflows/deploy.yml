@@ -80,8 +80,8 @@ jobs:
       - name: Build docs index page
         run: |
           echo '${{ needs.build-docs.outputs.matrix }}' | jq '{docs: .include}' > _temp.json
-          cat _temp.json
           ./scripts/make-index.sh _temp.json docs >docs/index.md
+          cat docs/index.md
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
