@@ -98,7 +98,7 @@ jobs:
           path: _site
 
   deploy:
-    needs: build-docs
+    needs: collect-docs
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
