@@ -15,10 +15,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Create requirements.txt
-        uses: 1arp/create-a-file-action@0.4.5
-        with:
-          file: 'requirements.txt'
-          content: 'pre-commit'
+        run: echo 'pre-commit' >requirements.txt
 
       - name: Set up Python
         uses: actions/setup-python@v6

@@ -65,9 +65,33 @@ jobs:
     needs: build-docs
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v6
+
       - name: Download all docs artifacts
         uses: actions/download-artifact@v4
         with:
           merge-multiple: true
 
-      - run: tree --filelimit 3
+      - name: Build index page
+        run: |
+          echo "${{ fromJSON(needs.list-docs.outputs.matrix) }}" | jq '{docs: .include}' > _temp.json
+          cat _temp.json
+          ./scripts/make-index.sh _temp.json docs >docs/index.md
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: docs
+          destination: _site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build-docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/deploy-pages@v4
