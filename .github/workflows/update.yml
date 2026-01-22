@@ -1,0 +1,43 @@
+name: Update
+
+on:
+  schedule:
+    - cron: 0 1 * * 0  # weekly
+  workflow_dispatch:
+
+jobs:
+  pre-commit-autoupdate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v6
+
+      - name: Create requirements.txt
+        run: echo 'pre-commit' >requirements.txt
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install pre-commit
+        run: pip install -r requirements.txt
+
+      - name: Autoupdate hooks
+        run: pre-commit autoupdate
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: 'chore(pre-commit): autoupdate hooks'
+          committer: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          branch: chore/create-pull-request/pre-commit-autoupdate
+          delete-branch: true
+          title: 'chore(pre-commit): autoupdate hooks'
+          body: |
+            Automated `pre-commit autoupdate`.
