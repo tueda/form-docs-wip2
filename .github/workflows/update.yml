@@ -32,7 +32,9 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Autoupdate hooks
-        run: pre-commit autoupdate
+        run: |
+          pre-commit autoupdate
+          rm -f requirements.txt
 
       # Prerequisite: The following repository setting is required:
       # Actions -> General -> Workflow permissions ->
