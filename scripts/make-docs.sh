@@ -70,8 +70,9 @@ clean_latex2html doc/devref/devref
 make_tarball doc/devref/devref "form-$version-devref-html"
 make -C doc/doxygen html
 make_tarball doc/doxygen/html "form-$version-doxygen-html"
-man -Thtml ../doc/form.1 >../doc/form.html
-man -Tpdf ../doc/form.1 >../doc/form.pdf
+cp ../doc/form.1 doc/form.1
+man -Thtml ../doc/form.1 >doc/form.html
+man -Tpdf ../doc/form.1 >doc/form.pdf
 
 # Prepare the output directory.
 mkdir -p "$out_dir"
@@ -88,6 +89,6 @@ mv "form-$version-doxygen-html.tar.gz" "$out_dir/form-$version-doxygen-html.tar.
 mv doc/manual/manual "$out_dir/manual"
 mv doc/devref/devref "$out_dir/devref"
 mv doc/doxygen/html "$out_dir/doxygen"
-mv ../doc/form.1 "$out_dir/form.1"
-mv ../doc/form.html "$out_dir/form.html"
-mv ../doc/form.pdf "$out_dir/form-$version.pdf"
+mv doc/form.1 "$out_dir/form.1"
+mv doc/form.html "$out_dir/form.html"
+mv doc/form.pdf "$out_dir/form-$version.pdf"
