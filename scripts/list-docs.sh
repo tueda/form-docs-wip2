@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Check for updates.
+# Generate a JSON list of documentation versions.
 #
 # Usage:
 #   list-docs.sh [options]

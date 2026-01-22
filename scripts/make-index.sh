@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Build the index page.
+# Build the Markdown index page.
 #
 # Usage:
 #   make-index.sh INPUT.json OUTPUT-DIR
@@ -12,9 +12,6 @@ out_dir=$2
 
 if [[ $input_json != /* ]]; then
   input_json="$PWD/$input_json"
-fi
-if [[ $out_dir != /* ]]; then
-  out_dir="$PWD/$out_dir"
 fi
 
 cd "$out_dir"
