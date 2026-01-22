@@ -29,9 +29,9 @@ cd "$out_dir"
   ' <"$input_json" | while IFS=$'\t' read -r name ref _rev url; do
     version=$(cat "$ref/_VERSION")
     echo "## [$name]($url)"
-    echo "- [FORM $version Reference manual]($ref/manual) (also in [PDF]($ref/form-$version-manual.pdf) or [an HTML tarball]($ref/form-$version-manual-html.tar.gz))"
-    echo "- [FORM $version Developer's reference manual]($ref/devref) (also in [PDF]($ref/form-$version-devref.pdf) or [an HTML tarball]($ref/form-$version-devref-html.tar.gz))"
-    echo "- [FORM $version API reference]($ref/doxygen) (also in [PDF]($ref/form-$version-doxygen.pdf) or [an HTML tarball]($ref/form-$version-doxygen-html.tar.gz))"
-    echo "- [Manpage of FORM $version]($ref/form.html) (also in [PDF]($ref/form-$version.pdf) or [a Manfile]($ref/form.1))"
+    echo "- [FORM $version Reference manual]($ref/manual) (also available in [PDF]($ref/form-$version-manual.pdf) or as an [HTML tarball]($ref/form-$version-manual-html.tar.gz))"
+    echo "- [FORM $version Developer's reference manual]($ref/devref) (also available in [PDF]($ref/form-$version-devref.pdf) or as an [HTML tarball]($ref/form-$version-devref-html.tar.gz))"
+    echo "- [FORM $version API reference]($ref/doxygen) (also available in [PDF]($ref/form-$version-doxygen.pdf) or as an [HTML tarball]($ref/form-$version-doxygen-html.tar.gz))"
+    echo "- [Manpage of FORM $version]($ref/form.html) (also available in [PDF]($ref/form-$version.pdf) or as a [man page]($ref/form.1))"
   done
 }
