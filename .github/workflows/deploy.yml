@@ -56,7 +56,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: docs-${{ matrix.ref }}
-          path: docs/${{ matrix.ref }}
+          path: |
+            docs/${{ matrix.ref }}
+            workaround/for/upload-artifact/issues/174  # See: https://github.com/actions/upload-artifact/issues/174
           if-no-files-found: error
 
   collect-docs:
@@ -66,7 +68,6 @@ jobs:
       - name: Download all docs artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: docs-*
           merge-multiple: true
 
       - run: ls -R
